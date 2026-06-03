@@ -261,6 +261,7 @@ async function sendMsg(text){
   try{
     const reply=await callAPI(msg);
     typ.remove();addMsg(reply,'her');
+    speak(reply);
     const re=detectEra(reply);if(re!=='default')switchEra(re);
     addBurst(W*.5,H*.36,80,curEra);
     setTimeout(()=>{talking=false},5000);
@@ -273,9 +274,48 @@ function sh(el){sendMsg(el.textContent)}
 txtEl.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg()});
 btnEl.addEventListener('click',()=>sendMsg());
 
+
+// ══ 语音功能 ══
+let voiceOn = true;
+let currentUtter = null;
+
+function speak(text) {
+  if (!voiceOn) return;
+  if (currentUtter) { speechSynthesis.cancel(); }
+  // 清理HTML标签
+  const clean = text.replace(/<[^>]*>/g, '').replace(/&br;/g,'').trim();
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = 'zh-CN';
+  utter.rate = 0.85;
+  utter.pitch = 1.08;
+  utter.volume = 1;
+  const voices = speechSynthesis.getVoices();
+  const zhVoice = voices.find(v => v.lang.includes('zh') && v.name.toLowerCase().includes('female'))
+    || voices.find(v => v.lang === 'zh-CN')
+    || voices.find(v => v.lang.includes('zh'));
+  if (zhVoice) utter.voice = zhVoice;
+  currentUtter = utter;
+  speechSynthesis.speak(utter);
+}
+
+// 声音开关按钮
+const voiceBtn = document.createElement('div');
+voiceBtn.innerHTML = '🔊';
+voiceBtn.style.cssText = 'position:fixed;top:18px;right:14px;z-index:20;width:38px;height:38px;border-radius:50%;background:rgba(155,35,53,.18);border:1px solid rgba(155,35,53,.38);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:all .2s;user-select:none';
+voiceBtn.addEventListener('click', () => {
+  voiceOn = !voiceOn;
+  voiceBtn.innerHTML = voiceOn ? '🔊' : '🔇';
+  voiceBtn.style.opacity = voiceOn ? '1' : '0.45';
+  if (!voiceOn) speechSynthesis.cancel();
+});
+document.body.appendChild(voiceBtn);
+speechSynthesis.getVoices();
+window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
 setTimeout(()=>{
   addMsg('你来了。坐吧，不必拘谨。<br>我这一生横跨四个时代，苦过也甜过——<br>你想从哪里开始问起？','her');
   addBurst(W*.5,H*.36,55,'default');
+  setTimeout(()=>speak('你来了。坐吧，不必拘谨。我这一生横跨四个时代，苦过也甜过，你想从哪里开始问起？'),600);
 },900);
 </script>
 </body>
