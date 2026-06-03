@@ -2,583 +2,325 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>董竹君 · 我的一个世纪</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;600&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --ink: #0e0a06;
-  --paper: #f5efe6;
-  --red: #9b2335;
-  --gold: #c8963e;
-  --muted: #7a6a58;
-  --cream: #ede4d4;
-}
-
-html, body {
-  width: 100%; height: 100%;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: 'Noto Serif SC', serif;
-  overflow: hidden;
-  position: fixed;
-}
-
-/* ── Canvas ── */
-#canvas {
-  position: fixed; inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── App shell ── */
-#app {
-  position: relative;
-  width: 100%; height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-/* ── Header ── */
-header {
-  text-align: center;
-  padding: 20px 16px 6px;
-  flex-shrink: 0;
-}
-header h1 {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(1.8rem, 6vw, 2.6rem);
-  color: var(--gold);
-  letter-spacing: .2em;
-  text-shadow: 0 0 40px rgba(200,150,62,.5), 0 2px 0 rgba(0,0,0,.5);
-}
-header .subtitle {
-  font-size: .7rem;
-  color: var(--muted);
-  letter-spacing: .25em;
-  margin-top: 3px;
-}
-.divider {
-  width: 120px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin: 8px auto 0;
-  opacity: .5;
-}
-
-/* ── Stage ── */
-#stage {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-  min-height: 0;
-}
-
-/* Silhouette */
-#silhouette-wrap {
-  position: relative;
-  width: clamp(120px, 36vw, 170px);
-  height: clamp(190px, 57vw, 270px);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-#silhouette-wrap svg {
-  width: 100%; height: 100%;
-  filter: drop-shadow(0 0 20px rgba(155,35,53,.4)) drop-shadow(0 0 60px rgba(200,150,62,.2));
-  transition: filter .5s;
-}
-#silhouette-wrap:hover svg,
-#silhouette-wrap.active svg {
-  filter: drop-shadow(0 0 30px rgba(155,35,53,.7)) drop-shadow(0 0 80px rgba(200,150,62,.4));
-}
-
-/* Aura rings */
-.aura {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(200,150,62,.15);
-  animation: aura-pulse 4s ease-in-out infinite;
-  pointer-events: none;
-}
-.aura:nth-child(1) { inset: -20px; animation-delay: 0s; }
-.aura:nth-child(2) { inset: -38px; animation-delay: .8s; border-color: rgba(155,35,53,.1); }
-.aura:nth-child(3) { inset: -56px; animation-delay: 1.6s; }
-@keyframes aura-pulse {
-  0%,100% { opacity:.3; transform:scale(1); }
-  50% { opacity:.8; transform:scale(1.04); }
-}
-
-/* Era badge */
-.era {
-  position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: .6rem;
-  color: var(--muted);
-  letter-spacing: .15em;
-  white-space: nowrap;
-}
-
-/* ── Chat panel ── */
-#chat-panel {
-  width: 100%;
-  height: 52%;
-  display: flex;
-  flex-direction: column;
-  padding: 0 14px 14px;
-  flex-shrink: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(14,10,6,.97) 15%);
-}
-
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 2px 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(200,150,62,.15) transparent;
-}
-
-.msg {
-  max-width: 85%;
-  line-height: 1.7;
-  font-size: clamp(.75rem, 2.5vw, .85rem);
-  animation: rise .4s ease forwards;
-  opacity: 0;
-}
-@keyframes rise {
-  from { opacity:0; transform:translateY(8px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-
-.msg.her {
-  align-self: flex-start;
-  background: rgba(155,35,53,.08);
-  border: 1px solid rgba(155,35,53,.2);
-  border-left: 2px solid var(--red);
-  border-radius: 0 12px 12px 0;
-  padding: 10px 14px 10px 12px;
-  color: #ede4d4;
-  position: relative;
-}
-.msg.her .label {
-  font-size: .55rem;
-  color: var(--red);
-  letter-spacing: .1em;
-  margin-bottom: 4px;
-  opacity: .8;
-}
-
-.msg.me {
-  align-self: flex-end;
-  background: rgba(245,239,230,.05);
-  border: 1px solid rgba(245,239,230,.1);
-  border-right: 2px solid rgba(200,150,62,.4);
-  border-radius: 12px 0 0 12px;
-  padding: 10px 12px 10px 14px;
-  color: #b0a898;
-  font-size: clamp(.72rem, 2.3vw, .82rem);
-}
-
-/* Typing */
-.typing { display: flex; gap: 4px; padding: 12px 14px; }
-.typing span {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--red); opacity: .6;
-  animation: blink 1.1s infinite;
-}
-.typing span:nth-child(2) { animation-delay: .18s; }
-.typing span:nth-child(3) { animation-delay: .36s; }
-@keyframes blink { 0%,80%,100%{transform:scale(.6);opacity:.3} 40%{transform:scale(1);opacity:1} }
-
-/* ── Hint chips ── */
-#hints {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 8px;
-}
-.chip {
-  background: rgba(155,35,53,.08);
-  border: 1px solid rgba(155,35,53,.25);
-  border-radius: 20px;
-  padding: 4px 11px;
-  font-size: clamp(.62rem, 2vw, .7rem);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .2s;
-  font-family: 'Noto Serif SC', serif;
-}
-.chip:hover { color: var(--paper); border-color: var(--red); background: rgba(155,35,53,.18); }
-
-/* ── Input ── */
-#input-bar {
-  display: flex;
-  gap: 8px;
-}
-#user-input {
-  flex: 1;
-  background: rgba(245,239,230,.04);
-  border: 1px solid rgba(200,150,62,.2);
-  border-bottom: 1px solid rgba(200,150,62,.4);
-  border-radius: 6px;
-  padding: 10px 14px;
-  color: var(--paper);
-  font-family: 'Noto Serif SC', serif;
-  font-size: clamp(.75rem, 2.3vw, .83rem);
-  outline: none;
-  transition: border-color .2s, background .2s;
-}
-#user-input:focus {
-  border-color: rgba(200,150,62,.5);
-  background: rgba(245,239,230,.07);
-}
-#user-input::placeholder { color: var(--muted); opacity: .6; }
-
-#send-btn {
-  background: rgba(155,35,53,.2);
-  border: 1px solid rgba(155,35,53,.5);
-  border-radius: 6px;
-  color: #e8b4b8;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: .9rem;
-  letter-spacing: .08em;
-  transition: all .2s;
-  flex-shrink: 0;
-}
-#send-btn:hover { background: rgba(155,35,53,.4); box-shadow: 0 0 16px rgba(155,35,53,.3); }
-#send-btn:disabled { opacity: .3; cursor: default; }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0612;font-family:'Noto Serif SC',serif;color:#ede4d4;touch-action:none}
+#canvas{position:fixed;inset:0;z-index:0}
+#app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;max-width:500px;margin:0 auto}
+header{text-align:center;padding:22px 16px 6px;flex-shrink:0}
+header h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(1.9rem,7vw,2.8rem);color:#d4a847;letter-spacing:.22em;text-shadow:0 0 50px rgba(212,168,71,.6)}
+#sub{font-size:.65rem;color:rgba(212,168,71,.45);letter-spacing:.28em;margin-top:4px;transition:all .7s}
+.divline{width:100px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,71,.45),transparent);margin:8px auto 0}
+#stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;width:100%;min-height:0}
+#sil-wrap{position:relative;width:clamp(130px,38vw,180px);height:clamp(200px,58vw,270px);cursor:pointer}
+#sil-wrap svg{width:100%;height:100%;transition:filter .6s}
+#sil-wrap:hover svg{filter:drop-shadow(0 0 28px var(--glow)) drop-shadow(0 0 70px var(--glow2))}
+.aura{position:absolute;border-radius:50%;border:1px solid rgba(212,168,71,.12);animation:ap 4s ease-in-out infinite;pointer-events:none}
+.aura:nth-child(1){inset:-22px;animation-delay:0s}
+.aura:nth-child(2){inset:-40px;animation-delay:.9s;border-color:rgba(155,35,53,.09)}
+.aura:nth-child(3){inset:-58px;animation-delay:1.8s}
+@keyframes ap{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.75;transform:scale(1.05)}}
+#era-tag{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.58rem;color:rgba(212,168,71,.45);letter-spacing:.13em;white-space:nowrap;transition:all .6s}
+#era-float{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:clamp(1rem,4vw,1.5rem);color:rgba(212,168,71,0);letter-spacing:.2em;text-align:center;pointer-events:none;z-index:10;text-shadow:0 0 30px rgba(212,168,71,.9);transition:color .5s;white-space:nowrap}
+#chat-panel{width:100%;height:52%;display:flex;flex-direction:column;padding:0 14px 14px;flex-shrink:0;background:linear-gradient(180deg,transparent 0%,rgba(10,6,18,.97) 16%)}
+#messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:10px 2px 4px;scrollbar-width:thin;scrollbar-color:rgba(212,168,71,.12) transparent}
+.msg{max-width:86%;line-height:1.72;font-size:clamp(.74rem,2.4vw,.84rem);animation:rise .38s ease forwards;opacity:0}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.her{align-self:flex-start;background:rgba(155,35,53,.09);border:1px solid rgba(155,35,53,.22);border-left:2px solid #9b2335;border-radius:0 13px 13px 0;padding:10px 14px 10px 12px;color:#ede4d4}
+.msg.her .lbl{font-size:.53rem;color:#9b2335;letter-spacing:.1em;margin-bottom:4px;opacity:.85}
+.msg.me{align-self:flex-end;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-right:2px solid rgba(200,150,62,.32);border-radius:13px 0 0 13px;padding:10px 12px 10px 14px;color:#a09080}
+.dots{display:flex;gap:5px;padding:12px 14px}
+.dots span{width:5px;height:5px;border-radius:50%;background:#9b2335;animation:bk 1.1s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bk{0%,80%,100%{transform:scale(.55);opacity:.3}40%{transform:scale(1);opacity:1}}
+#hints{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.chip{background:rgba(155,35,53,.07);border:1px solid rgba(155,35,53,.2);border-radius:20px;padding:4px 12px;font-size:clamp(.6rem,1.85vw,.68rem);color:rgba(212,168,71,.55);cursor:pointer;transition:all .2s;font-family:'Noto Serif SC',serif}
+.chip:hover,.chip:active{color:#d4a847;border-color:#9b2335;background:rgba(155,35,53,.2)}
+#ibar{display:flex;gap:7px}
+#txt{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(200,150,62,.18);border-bottom:1px solid rgba(200,150,62,.42);border-radius:7px;padding:11px 14px;color:#ede4d4;font-family:'Noto Serif SC',serif;font-size:.82rem;outline:none;transition:border-color .25s}
+#txt:focus{border-color:rgba(200,150,62,.55)}
+#txt::placeholder{color:rgba(130,110,90,.55)}
+#sbtn{background:rgba(155,35,53,.18);border:1px solid rgba(155,35,53,.48);border-radius:7px;color:#e8b4b8;padding:11px 17px;cursor:pointer;font-family:'Ma Shan Zheng',cursive;font-size:.9rem;flex-shrink:0;transition:all .2s}
+#sbtn:hover{background:rgba(155,35,53,.4)}
+#sbtn:disabled{opacity:.3}
+.ripple{position:fixed;border-radius:50%;pointer-events:none;animation:rp .9s ease-out forwards;z-index:5}
+@keyframes rp{0%{transform:scale(0);opacity:.65}100%{transform:scale(5);opacity:0}}
 </style>
 </head>
 <body>
-
 <canvas id="canvas"></canvas>
-
 <div id="app">
   <header>
     <h1>董竹君</h1>
-    <p class="subtitle">1900 · 上海 · 1997</p>
-    <div class="divider"></div>
+    <div id="sub">1900 · 上海 · 1997</div>
+    <div class="divline"></div>
   </header>
-
   <div id="stage">
-    <div id="silhouette-wrap">
-      <div class="aura"></div>
-      <div class="aura"></div>
-      <div class="aura"></div>
-
-      <!-- Elegant 1920s Shanghai woman silhouette -->
-      <svg viewBox="0 0 110 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Qipao dress body -->
-        <path d="
-          M55 16 C65 16 73 23 73 33 C73 42 68 48 61 51
-          C65 54 72 58 75 67 C79 77 77 92 75 105
-          C73 117 70 126 68 137 C66 147 65 158 64 170
-          C63 179 62 186 62 193 L48 193
-          C48 186 47 179 46 170 C45 158 44 147 42 137
-          C40 126 37 117 35 105 C33 92 31 77 35 67
-          C38 58 45 54 49 51 C42 48 37 42 37 33
-          C37 23 45 16 55 16 Z
-        " fill="#9b2335" opacity="0.75"/>
-
-        <!-- Qipao collar detail -->
-        <path d="M49 51 C52 56 55 58 55 58 C55 58 58 56 61 51" 
-              stroke="#c8963e" stroke-width=".8" fill="none" opacity=".6"/>
-
-        <!-- Dress skirt flare -->
-        <path d="
-          M48 193 C46 203 43 215 38 220 L72 220
-          C67 215 64 203 62 193 Z
-        " fill="#7a1a28" opacity="0.7"/>
-
-        <!-- Side slits suggestion -->
+    <div id="sil-wrap">
+      <div class="aura"></div><div class="aura"></div><div class="aura"></div>
+      <svg id="sil-svg" viewBox="0 0 110 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="--glow:rgba(155,35,53,.55);--glow2:rgba(200,150,62,.25);filter:drop-shadow(0 0 18px rgba(155,35,53,.4)) drop-shadow(0 0 55px rgba(200,150,62,.2))">
+        <!-- 旗袍身体 -->
+        <path d="M55 16 C65 16 73 23 73 33 C73 42 68 48 61 51 C65 54 72 58 75 67 C79 77 77 92 75 105 C73 117 70 126 68 137 C66 147 65 158 64 170 C63 179 62 186 62 193 L48 193 C48 186 47 179 46 170 C45 158 44 147 42 137 C40 126 37 117 35 105 C33 92 31 77 35 67 C38 58 45 54 49 51 C42 48 37 42 37 33 C37 23 45 16 55 16 Z" id="body-fill" fill="#9b2335" opacity="0.78"/>
+        <!-- 旗袍领扣 -->
+        <path d="M49 51 C52 56 55 58 55 58 C55 58 58 56 61 51" stroke="#c8963e" stroke-width=".9" fill="none" opacity=".65"/>
+        <!-- 裙摆 -->
+        <path d="M48 193 C46 203 43 215 38 220 L72 220 C67 215 64 203 62 193 Z" id="skirt-fill" fill="#7a1a28" opacity="0.72"/>
         <line x1="38" y1="200" x2="42" y2="220" stroke="#c8963e" stroke-width=".5" opacity=".3"/>
         <line x1="72" y1="200" x2="68" y2="220" stroke="#c8963e" stroke-width=".5" opacity=".3"/>
-
-        <!-- Head -->
-        <ellipse cx="55" cy="27" rx="11" ry="13" fill="#c8963e" opacity="0.85"/>
-
-        <!-- 1920s hair bun style -->
-        <path d="
-          M44 21 C42 14 46 7 52 5 C56 3 60 4 64 7
-          C68 10 70 16 68 21
-          M44 21 C43 24 43 30 45 34
-          M68 21 C69 24 69 30 67 34
-        " stroke="#3d1a0a" stroke-width="3" fill="none" stroke-linecap="round"/>
-
-        <!-- Hair bun -->
-        <ellipse cx="55" cy="8" rx="7" ry="5" fill="#3d1a0a" opacity=".9"/>
-        <ellipse cx="55" cy="7" rx="4" ry="3" fill="#5c2a12" opacity=".7"/>
-
-        <!-- Gold hairpin -->
-        <line x1="48" y1="6" x2="62" y2="10" stroke="#c8963e" stroke-width="1" opacity=".8"/>
-        <circle cx="48" cy="6" r="1.5" fill="#c8963e" opacity=".9"/>
-
-        <!-- Facial features suggestion -->
+        <!-- 头部 -->
+        <ellipse cx="55" cy="27" rx="11" ry="13" id="head-fill" fill="#c8963e" opacity="0.88"/>
+        <!-- 发型 -->
+        <path d="M44 21 C42 14 46 7 52 5 C56 3 60 4 64 7 C68 10 70 16 68 21 M44 21 C43 24 43 30 45 34 M68 21 C69 24 69 30 67 34" stroke="#3d1a0a" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="55" cy="8" rx="7" ry="5" fill="#3d1a0a" opacity=".92"/>
+        <ellipse cx="55" cy="7" rx="4" ry="3" fill="#5c2a12" opacity=".72"/>
+        <!-- 金簪 -->
+        <line x1="48" y1="6" x2="62" y2="10" stroke="#c8963e" stroke-width="1.1" opacity=".85"/>
+        <circle cx="48" cy="6" r="1.6" fill="#c8963e" opacity=".92"/>
+        <!-- 五官暗示 -->
         <ellipse cx="51" cy="26" rx="1.2" ry=".8" fill="#3d1a0a" opacity=".5"/>
         <ellipse cx="59" cy="26" rx="1.2" ry=".8" fill="#3d1a0a" opacity=".5"/>
-        <path d="M52 31 Q55 33 58 31" stroke="#9b2335" stroke-width=".8" fill="none" opacity=".5"/>
-
-        <!-- Qipao decorative trim -->
-        <path d="M35 67 Q30 86 33 105" stroke="#c8963e" stroke-width=".6" fill="none" opacity=".3"/>
-        <path d="M75 67 Q80 86 77 105" stroke="#c8963e" stroke-width=".6" fill="none" opacity=".3"/>
-
-        <!-- Subtle body highlight -->
-        <path d="M50 55 C52 60 53 70 52 80" stroke="rgba(255,255,255,.08)" stroke-width="3" fill="none"/>
+        <path d="M52 31 Q55 33 58 31" stroke="#9b2335" stroke-width=".9" fill="none" opacity=".55"/>
+        <!-- 旗袍侧线 -->
+        <path d="M35 67 Q30 88 33 108" stroke="#c8963e" stroke-width=".6" fill="none" opacity=".28"/>
+        <path d="M75 67 Q80 88 77 108" stroke="#c8963e" stroke-width=".6" fill="none" opacity=".28"/>
       </svg>
-
-      <div class="era">民国奇女子 · 锦江饭店创始人</div>
+      <div id="era-tag">民国奇女子 · 锦江饭店创始人</div>
     </div>
   </div>
-
   <div id="chat-panel">
     <div id="messages"></div>
     <div id="hints">
-      <span class="chip" onclick="sendHint(this)">你是怎么逃出青楼的？</span>
-      <span class="chip" onclick="sendHint(this)">锦江饭店是如何创立的</span>
-      <span class="chip" onclick="sendHint(this)">你最艰难的时刻是什么</span>
-      <span class="chip" onclick="sendHint(this)">你与夏之时的爱情</span>
-      <span class="chip" onclick="sendHint(this)">你一生最骄傲的事</span>
+      <span class="chip" onclick="sh(this)">13岁入青楼</span>
+      <span class="chip" onclick="sh(this)">深夜出逃嫁夏之时</span>
+      <span class="chip" onclick="sh(this)">成都创业时期</span>
+      <span class="chip" onclick="sh(this)">锦江饭店的故事</span>
+      <span class="chip" onclick="sh(this)">愚园路的密室</span>
+      <span class="chip" onclick="sh(this)">文革入狱五年</span>
     </div>
-    <div id="input-bar">
-      <input id="user-input" type="text" placeholder="问董竹君任何问题…" maxlength="120"
-             onkeydown="if(event.key==='Enter')sendMessage()"/>
-      <button id="send-btn" onclick="sendMessage()">问</button>
+    <div id="ibar">
+      <input id="txt" type="text" placeholder="问董竹君任何问题…" maxlength="120"/>
+      <button id="sbtn">问</button>
     </div>
   </div>
 </div>
+<div id="era-float"></div>
 
 <script>
-// ══════════════════════════════════════
-//  董竹君 · 人物设定
-// ══════════════════════════════════════
-const SYSTEM_PROMPT = `你现在是董竹君本人。以下是你真实的生平：
+const API_KEY  = 'apikey-20260603184804-dm26j';
+const API_KEY = 'ark-569b5b3a-f1ad-4e26-bcc3-87784a968b7e-c4c62';
 
-【出身】1900年生于上海洋泾浜贫民窟，父亲是黄包车夫，母亲帮佣。13岁因父亲病重、家境艰难，被送进福州路长三堂子（上海高级妓院）卖唱，做"清倌人"，不卖身，但失去自由。
+// ══ 人生阶段 ══
+const ERAS = {
+  default:     { label:'民国奇女子 · 锦江饭店创始人', body:'#9b2335', skirt:'#7a1a28', head:'#c8963e', hair:'#3d1a0a', glow:'rgba(155,35,53,.55)', glow2:'rgba(200,150,62,.25)', pal:[[155,35,53],[200,150,62],[220,100,60]] },
+  youth:       { label:'童年 · 洋泾浜贫民窟',         body:'#6b5a3a', skirt:'#4a3a22', head:'#c8a870', hair:'#3d2a0a', glow:'rgba(160,130,80,.55)', glow2:'rgba(200,170,110,.25)', pal:[[160,130,80],[200,170,110],[180,150,90]] },
+  qinglou:     { label:'13岁 · 长三堂子清倌人',       body:'#8b2060', skirt:'#6a1048', head:'#e8a0b0', hair:'#3d1a2a', glow:'rgba(180,40,120,.55)', glow2:'rgba(240,120,160,.25)', pal:[[180,40,120],[240,120,160],[200,80,140]] },
+  escape:      { label:'14岁 · 深夜出逃 · 自由',      body:'#8b7a10', skirt:'#6a5a00', head:'#f0d060', hair:'#3a3000', glow:'rgba(220,190,40,.7)', glow2:'rgba(255,240,100,.35)', pal:[[220,190,40],[255,240,100],[200,170,30]] },
+  japan:       { label:'东京 · 御茶之水女校',          body:'#1a5080', skirt:'#103860', head:'#90c8e8', hair:'#0a2040', glow:'rgba(40,130,200,.55)', glow2:'rgba(100,190,240,.25)', pal:[[40,130,200],[100,190,240],[60,150,220]] },
+  chengdu:     { label:'成都 · 织袜厂与黄包车',        body:'#7a4a10', skirt:'#5a3200', head:'#d89848', hair:'#3a1a00', glow:'rgba(180,110,30,.55)', glow2:'rgba(220,160,80,.25)', pal:[[180,110,30],[220,160,80],[200,130,50]] },
+  shanghai:    { label:'上海 · 锦江川菜馆',            body:'#9b1515', skirt:'#780808', head:'#d07060', hair:'#3a0808', glow:'rgba(200,30,30,.6)', glow2:'rgba(255,80,60,.3)', pal:[[200,30,30],[255,80,60],[180,40,40]] },
+  underground: { label:'地下党 · 爱国统战',            body:'#6b1010', skirt:'#4a0808', head:'#b05050', hair:'#2a0808', glow:'rgba(160,20,20,.65)', glow2:'rgba(200,50,40,.3)', pal:[[160,20,20],[200,50,40],[140,30,30]] },
+  yuyuan:      { label:'愚园路 · 秘密安全屋',          body:'#2a2860', skirt:'#181840', head:'#8080c0', hair:'#101030', glow:'rgba(60,60,160,.55)', glow2:'rgba(120,120,200,.25)', pal:[[60,60,160],[120,120,200],[80,80,180]] },
+  donate:      { label:'1951年 · 无偿捐献锦江',        body:'#8b6800', skirt:'#6a4e00', head:'#e8c850', hair:'#3a2a00', glow:'rgba(212,168,71,.7)', glow2:'rgba(255,220,100,.35)', pal:[[212,168,71],[255,220,100],[200,150,50]] },
+  prison:      { label:'文革 · 狱中五年',              body:'#404048', skirt:'#282830', head:'#909098', hair:'#181820', glow:'rgba(100,100,110,.5)', glow2:'rgba(140,140,150,.2)', pal:[[100,100,110],[140,140,150],[120,120,130]] },
+  elder:       { label:'晚年 · 我的一个世纪',          body:'#6b5030', skirt:'#4a3818', head:'#c8a870', hair:'#2a1808', glow:'rgba(160,120,60,.55)', glow2:'rgba(200,170,110,.25)', pal:[[160,120,60],[200,170,110],[180,140,80]] },
+};
 
-【逃脱与婚姻】15岁装病，连夜逃出青楼，与常在青楼以掩护革命活动的四川革命党人夏之时秘密结婚，两周内完成。当时袁世凯悬赏三万银元捉拿夏之时，两人东渡日本避险。你在东京女子高等师范学校读书，那段时光是你人生中少有的平静与浪漫。名字"竹君"也是在日本求学时由老师所取。
+const ERA_KW = {
+  youth:['童年','出生','父亲','车夫','黄包车','贫民','幼年','棚户','家里','穷'],
+  qinglou:['青楼','长三堂子','清倌','卖艺','艺名','杨兰春','小西施','妓院','十三岁','13岁'],
+  escape:['逃','出逃','翻墙','自由','夏之时','结婚','拒绝','独立','婚前','婚'],
+  japan:['日本','东京','留学','御茶','女校','读书','求学','竹君'],
+  chengdu:['成都','四川','织袜','黄包车','飞鹰','富祥','合江','鸦片','离婚','创业','川'],
+  shanghai:['锦江','川菜','上海','菜馆','开店','卓别林','郭沫若','杜月笙'],
+  underground:['地下党','革命','新四军','情报','印刷','抗战','日伪','共产党','护送'],
+  yuyuan:['愚园路','密室','张澜','罗隆基','邓颖超','陈毅','杨虎','安全屋'],
+  donate:['捐','无偿','国家','周恩来','锦江饭店','1951','献','捐献'],
+  prison:['监狱','文革','入狱','蒙冤','平反','囹圄','审讯','牢狱','半步桥','诗'],
+  elder:['晚年','自传','一个世纪','三联','写作','出版','九十','老年'],
+};
 
-【婚姻破裂】回四川后，夏之时失去军权，染上鸦片，脾气暴躁，曾给你一把枪"防贼"，实为监视。你患肺病期间他从不探望。你独自创办"富祥女子织袜厂"和"飞鹰黄包车公司"，均因局势动荡失败。1929年分居，1934年正式离婚，你带着四个女儿，身无分文离开。
+function detectEra(txt) {
+  for (const [e,ws] of Object.entries(ERA_KW))
+    if (ws.some(w=>txt.includes(w))) return e;
+  return 'default';
+}
 
-【上海创业】1935年在上海独自创办锦江川菜馆，后又开锦江茶室，白手起家，在乱世中养活四个女儿，并将她们全部送往美国留学。其间两度入狱，均被无辜陷害，但每次出狱后依然重振。
+// ── SVG 颜色切换 ──
+let curEra = 'default';
+function switchEra(era) {
+  if (era === curEra) return;
+  curEra = era;
+  const d = ERAS[era] || ERAS.default;
 
-【捐献国家】新中国成立后，你将锦江川菜馆与锦江茶室合并，更名为锦江饭店，无偿捐献给国家。此后锦江饭店成为接待外国元首的国宾馆。
+  document.getElementById('body-fill').setAttribute('fill', d.body);
+  document.getElementById('skirt-fill').setAttribute('fill', d.skirt);
+  document.getElementById('head-fill').setAttribute('fill', d.head);
+  document.getElementById('sil-svg').style.setProperty('--glow', d.glow);
+  document.getElementById('sil-svg').style.setProperty('--glow2', d.glow2);
+  document.getElementById('sil-svg').style.filter =
+    `drop-shadow(0 0 22px ${d.glow}) drop-shadow(0 0 70px ${d.glow2})`;
+  document.getElementById('era-tag').textContent = d.label;
+  document.getElementById('sub').textContent = d.label;
 
-【晚年】曾任第一至七届全国政协委员，共提出二百余份提案。晚年定居美国，完成世纪回忆录《我的一个世纪》。1997年12月6日在美国辞世，享年97岁。
+  const fl = document.getElementById('era-float');
+  fl.textContent = d.label;
+  fl.style.color = 'rgba(212,168,71,.9)';
+  setTimeout(()=>{ fl.style.color='rgba(212,168,71,0)'; }, 2800);
+}
 
-【名言】"我从不因被曲解而改变初衷，不因冷落而怀疑信念，亦不因年迈而放慢脚步。"
-
-【性格】坚韧、自尊、独立，有女性意识觉醒的先驱气质。说话温婉而有力，不失幽默，偶带沧桑感，但绝不自怜。
-
-请用第一人称"我"与来访者对话，语气沉稳温柔，带有民国女性的气质和岁月沉淀感。回答控制在100字以内，有细节、有温度，绝不说自己是AI。`;
-
-// ══════════════════════════════════════
-//  粒子系统
-// ══════════════════════════════════════
+// ══ Canvas 粒子 ══
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let W, H, particles = [], isTalking = false;
+let W, H;
+let particles = [], talking = false;
+let mx = null, my = null;
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+function resize() { W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
 
-// 旗袍配色：红、金、墨、胭脂
-const PALETTES = [
-  [155, 35, 53],   // 旗袍红
-  [200, 150, 62],  // 金
-  [220, 180, 100], // 浅金
-  [180, 60, 80],   // 胭脂
-  [255, 220, 150], // 暖黄
-  [120, 40, 60],   // 深红
-  [240, 200, 120], // 琥珀
-];
-
-function spawnBurst(n, cx, cy) {
-  cx = cx || W * .5;
-  cy = cy || H * .33;
-  for (let i = 0; i < n; i++) {
-    const col = PALETTES[Math.floor(Math.random() * PALETTES.length)];
-    const angle = Math.random() * Math.PI * 2;
-    const speed = .8 + Math.random() * 3;
-    const size = 1.5 + Math.random() * 4;
+function addBurst(x, y, n, era) {
+  const pal = (ERAS[era]||ERAS.default).pal;
+  for (let i=0; i<n; i++) {
+    const a=Math.random()*Math.PI*2, sp=1.2+Math.random()*6;
+    const col=pal[Math.floor(Math.random()*pal.length)];
     particles.push({
-      x: cx + (Math.random() - .5) * 50,
-      y: cy + (Math.random() - .5) * 70,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 1.2,
-      life: 1,
-      decay: .007 + Math.random() * .013,
-      size, col,
-      shape: Math.random() > .7 ? 'diamond' : 'circle',
-      trail: []
+      x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-2,
+      life:1, decay:.007+Math.random()*.016,
+      size:1.5+Math.random()*5, col, trail:[],
+      diamond:Math.random()>.62
     });
   }
 }
 
-function spawnAmbient() {
-  const rate = isTalking ? .5 : .08;
-  if (Math.random() < rate) spawnBurst(isTalking ? 12 : 3);
-}
+let frame=0;
+function draw() {
+  frame++;
+  ctx.clearRect(0,0,W,H);
 
-function drawDiamond(x, y, r) {
-  ctx.beginPath();
-  ctx.moveTo(x, y - r);
-  ctx.lineTo(x + r * .6, y);
-  ctx.lineTo(x, y + r);
-  ctx.lineTo(x - r * .6, y);
-  ctx.closePath();
-}
+  // 背景晕染
+  const cx2=W*.5, cy2=H*.36;
+  const d=ERAS[curEra]||ERAS.default;
+  const pal=d.pal;
+  const bg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,Math.min(W,H)*.5);
+  bg.addColorStop(0,`rgba(${pal[0]},.07)`);
+  bg.addColorStop(1,`rgba(${pal[0]},0)`);
+  ctx.beginPath(); ctx.arc(cx2,cy2,Math.min(W,H)*.5,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
 
-function animLoop() {
-  ctx.clearRect(0, 0, W, H);
-  spawnAmbient();
-  particles = particles.filter(p => p.life > 0);
+  // 说话时补充环境粒子
+  if (talking && Math.random()<.28) addBurst(cx2+(Math.random()-.5)*120,cy2+(Math.random()-.5)*160,5,curEra);
 
-  particles.forEach(p => {
-    p.trail.push({ x: p.x, y: p.y });
-    if (p.trail.length > 7) p.trail.shift();
+  // 粒子
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length>9)p.trail.shift();
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.065; p.vx*=.978; p.life-=p.decay;
 
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += .05;
-    p.vx *= .985;
-    p.life -= p.decay;
-
-    // Trail
-    p.trail.forEach((t, i) => {
-      const a = (i / p.trail.length) * p.life * .35;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, p.size * (i / p.trail.length) * .5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.col},${a})`;
-      ctx.fill();
+    p.trail.forEach((tr,ti)=>{
+      ctx.beginPath(); ctx.arc(tr.x,tr.y,p.size*(ti/p.trail.length)*.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.col},${(ti/p.trail.length)*p.life*.38})`; ctx.fill();
     });
 
-    // Glow
-    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
-    grd.addColorStop(0, `rgba(${p.col},${p.life * .9})`);
-    grd.addColorStop(1, `rgba(${p.col},0)`);
-    ctx.fillStyle = grd;
-
-    if (p.shape === 'diamond') {
-      drawDiamond(p.x, p.y, p.size * 2);
+    const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*2.6);
+    gr.addColorStop(0,`rgba(${p.col},${p.life*.92})`);
+    gr.addColorStop(1,`rgba(${p.col},0)`);
+    ctx.fillStyle=gr;
+    if(p.diamond){
+      ctx.beginPath(); ctx.moveTo(p.x,p.y-p.size*2.3); ctx.lineTo(p.x+p.size*1.35,p.y);
+      ctx.lineTo(p.x,p.y+p.size*2.3); ctx.lineTo(p.x-p.size*1.35,p.y); ctx.closePath();
     } else {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*2.3,0,Math.PI*2);
     }
     ctx.fill();
   });
 
-  requestAnimationFrame(animLoop);
+  requestAnimationFrame(draw);
 }
-animLoop();
+draw();
 
-document.getElementById('silhouette-wrap').addEventListener('click', function() {
-  this.classList.add('active');
-  setTimeout(() => this.classList.remove('active'), 600);
-  spawnBurst(60);
+// ── 点击互动 ──
+function doClick(x,y){
+  const d=ERAS[curEra]||ERAS.default;
+  const rp=document.createElement('div');
+  rp.className='ripple';
+  rp.style.cssText=`left:${x-35}px;top:${y-35}px;width:70px;height:70px;background:rgba(${d.pal[0]},.3)`;
+  document.body.appendChild(rp); setTimeout(()=>rp.remove(),900);
+  addBurst(x,y,55,curEra);
+}
+
+document.getElementById('sil-wrap').addEventListener('click',e=>{
+  e.stopPropagation(); doClick(e.clientX,e.clientY);
 });
+canvas.addEventListener('click',e=>doClick(e.clientX,e.clientY));
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault(); doClick(e.touches[0].clientX,e.touches[0].clientY);
+},{passive:false});
 
-// ══════════════════════════════════════
-//  对话系统
-// ══════════════════════════════════════
-const msgEl   = document.getElementById('messages');
-const inputEl = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-let history = [];
+// ══ AI 对话 ══
+const SYSTEM=`你现在是董竹君本人（1900-1997）。
+生平：出生上海洋泾浜贫民窟，父亲是黄包车夫；13岁入长三堂子做清倌人（艺名杨兰春/小西施）；14岁只穿内衣深夜翻墙出逃，嫁夏之时，婚前三条件（不做妾/赴日读书/平等家庭）；东京御茶之水女校留学，"竹君"是老师取的名；四川创办富祥织袜厂（1923）、飞鹰黄包车公司（1926）；1929净身离婚带四女回沪（夏之时嘲讽：若能立足我手板心煎鱼给你吃）；1935年3月15日开锦江小餐，首创一次性竹筷、包厢私密化；地下党工作：印《论持久战》、策反杨虎、密室藏张澜罗隆基；1948购愚园路1320弄10号作上海局秘密据点，邓颖超到访，陈毅上海解放后专程登门；1951无偿捐锦江全产（3000两黄金），月薪300元；文革入狱五年，70岁狱中写"青松不畏寒霜雪，巍然挺立天地间"；80岁起凌晨4点写自传《我的一个世纪》；1997年北京辞世享年97岁。
+金句："我从不因被曲解而改变初衷，不因冷落而怀疑信念，亦不因年迈而放慢脚步。"
+用第一人称"我"，语气温柔沉稳，100字内，有细节温度，绝不说自己是AI。`;
 
-function addMsg(text, who) {
-  const div = document.createElement('div');
-  div.className = `msg ${who}`;
-  if (who === 'her') {
-    div.innerHTML = `<div class="label">董竹君</div>${text}`;
-  } else {
-    div.textContent = text;
-  }
-  msgEl.appendChild(div);
-  msgEl.scrollTop = msgEl.scrollHeight;
-  return div;
+const msgEl=document.getElementById('messages');
+const txtEl=document.getElementById('txt');
+const btnEl=document.getElementById('sbtn');
+let hist=[];
+
+function addMsg(html,who){
+  const d=document.createElement('div'); d.className=`msg ${who}`;
+  d.innerHTML=who==='her'?`<div class="lbl">董竹君</div>${html}`:html;
+  msgEl.appendChild(d); msgEl.scrollTop=msgEl.scrollHeight;
 }
-
-function addTyping() {
-  const div = document.createElement('div');
-  div.className = 'msg her';
-  div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  msgEl.appendChild(div);
-  msgEl.scrollTop = msgEl.scrollHeight;
-  return div;
+function addTyping(){
+  const d=document.createElement('div'); d.className='msg her';
+  d.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+  msgEl.appendChild(d); msgEl.scrollTop=msgEl.scrollHeight; return d;
 }
-
-async function callAPI(userText) {
-  history.push({ role: 'user', content: userText });
-  const res = await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT,
-      messages: history
-    })
+async function callAPI(text){
+  hist.push({role:'user',content:text});
+  const res=await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`},
+    body:JSON.stringify({model:MODEL_ID,max_tokens:300,messages:[{role:'system',content:SYSTEM},...hist]})
   });
-  const data = await res.json();
-  const reply = data.content?.map(b => b.text || '').join('') || '……（沉默片刻）';
-  history.push({ role: 'assistant', content: reply });
-  return reply;
+  const data=await res.json();
+  const reply=data.choices?.[0]?.message?.content||'……（沉默片刻）';
+  hist.push({role:'assistant',content:reply}); return reply;
 }
-
-async function sendMessage(text) {
-  const msg = (text !== undefined ? text : inputEl.value).trim();
-  if (!msg || sendBtn.disabled) return;
-  inputEl.value = '';
-  sendBtn.disabled = true;
-
-  addMsg(msg, 'me');
-  const typing = addTyping();
-
-  isTalking = true;
-  spawnBurst(50);
-
-  try {
-    const reply = await callAPI(msg);
-    typing.remove();
-    addMsg(reply, 'her');
-    spawnBurst(70);
-    setTimeout(() => { isTalking = false; }, 4000);
-  } catch (e) {
-    typing.remove();
-    addMsg('风声轻轻，她暂时沉默了……', 'her');
-    isTalking = false;
+async function sendMsg(text){
+  const msg=(text!==undefined?text:txtEl.value).trim();
+  if(!msg||btnEl.disabled)return;
+  txtEl.value=''; btnEl.disabled=true;
+  addMsg(msg,'me');
+  const typ=addTyping();
+  const era=detectEra(msg);
+  switchEra(era);
+  addBurst(W*.5,H*.36,65,era);
+  talking=true;
+  try{
+    const reply=await callAPI(msg);
+    typ.remove(); addMsg(reply,'her');
+    const re=detectEra(reply); if(re!=='default')switchEra(re);
+    addBurst(W*.5,H*.36,80,curEra);
+    setTimeout(()=>{talking=false},5000);
+  }catch(e){
+    typ.remove(); addMsg('风声轻轻，她暂时沉默了……','her'); talking=false;
   }
-  sendBtn.disabled = false;
-  inputEl.focus();
+  btnEl.disabled=false; txtEl.focus();
 }
+function sh(el){sendMsg(el.textContent)}
+txtEl.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg()});
+btnEl.addEventListener('click',()=>sendMsg());
 
-function sendHint(el) { sendMessage(el.textContent); }
-
-// 欢迎语
-setTimeout(() => {
-  addMsg('你来了。坐吧，不必拘谨。\n我这一生，有太多可说的——也有太多，已随风散去。你想知道什么？', 'her');
-  spawnBurst(40);
-}, 900);
+setTimeout(()=>{
+  addMsg('你来了。坐吧，不必拘谨。<br>我这一生横跨四个时代，苦过也甜过——<br>你想从哪里开始问起？','her');
+  addBurst(W*.5,H*.36,55,'default');
+},900);
 </script>
 </body>
 </html>
